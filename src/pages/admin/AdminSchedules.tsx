@@ -30,6 +30,7 @@ const AdminSchedules = () => {
     if (doc) {
       setDays(doc.available_days || []);
       setSlots(doc.available_slots || []);
+      setMaxPatients(doc.max_patients_per_day || 30);
     }
   }, [selectedId, doctors]);
 
