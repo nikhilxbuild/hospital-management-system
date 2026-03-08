@@ -127,6 +127,38 @@ export type Database = {
           },
         ]
       }
+      billing_items: {
+        Row: {
+          amount: number
+          billing_id: string
+          created_at: string
+          description: string
+          id: string
+        }
+        Insert: {
+          amount?: number
+          billing_id: string
+          created_at?: string
+          description: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          billing_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_items_billing_id_fkey"
+            columns: ["billing_id"]
+            isOneToOne: false
+            referencedRelation: "billing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
