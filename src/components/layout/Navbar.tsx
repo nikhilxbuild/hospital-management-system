@@ -98,9 +98,15 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2">
-              <Button variant="ghost" asChild>
-                <Link to="/login" onClick={() => setOpen(false)}>Patient Login</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button variant="ghost" asChild>
+                  <Link to="/dashboard" onClick={() => setOpen(false)}><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+                </Button>
+              ) : (
+                <Button variant="ghost" asChild>
+                  <Link to="/login" onClick={() => setOpen(false)}>Patient Login</Link>
+                </Button>
+              )}
               <Button asChild>
                 <Link to="/book" onClick={() => setOpen(false)}>Book Appointment</Link>
               </Button>
