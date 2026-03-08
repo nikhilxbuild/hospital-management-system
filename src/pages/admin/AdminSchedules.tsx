@@ -17,6 +17,7 @@ const AdminSchedules = () => {
   const [selectedId, setSelectedId] = useState("");
   const [days, setDays] = useState<string[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
+  const [maxPatients, setMaxPatients] = useState(30);
 
   useEffect(() => {
     supabase.from("doctors").select("*").then(({ data }) => {
