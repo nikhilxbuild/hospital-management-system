@@ -70,9 +70,27 @@ const AdminAppointments = () => {
     load();
   };
 
-  const markDone = async (id: string) => {
-    await supabase.from("appointments").update({ status: "done" }).eq("id", id);
-    toast({ title: "Marked as done" });
+  const markCompleted = async (apt: any) => {
+    // Update appointment status
+    await supabase.from("appointments").update({ status: "completed" }).eq("id", apt.id);
+
+    // Create billing entry for this appointment
+    await supabase.from("billing").insert({
+      appointment_id: apt.id,
+      patient_name: apt.patient_name,
+      doctor_name: apt.doctor_name,
+      date: apt.date,
+      amount: apt.fee || 0,
+      status: "pending",
+    });
+
+    toast({ title: "Appointment completed — moved to billing" });
+    load();
+  };
+
+  const markNotCompleted = async (id: string) => {
+    await supabase.from("appointments").update({ status: "no-show" }).eq("id", id);
+    toast({ title: "Marked as not completed (no-show)" });
     load();
   };
 
