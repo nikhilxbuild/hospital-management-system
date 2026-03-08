@@ -56,9 +56,15 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Patient Login</Link>
-          </Button>
+          {isLoggedIn ? (
+            <Button variant="ghost" asChild>
+              <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" asChild>
+              <Link to="/login">Patient Login</Link>
+            </Button>
+          )}
           <Button asChild>
             <Link to="/book">Book Appointment</Link>
           </Button>
