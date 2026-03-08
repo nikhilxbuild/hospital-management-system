@@ -15,7 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminAppointments from "./pages/admin/AdminAppointments";
-import AdminConsultations from "./pages/admin/AdminConsultations";
+
 import AdminSchedules from "./pages/admin/AdminSchedules";
 import AdminDoctors from "./pages/admin/AdminDoctors";
 import AdminPatients from "./pages/admin/AdminPatients";
