@@ -162,7 +162,14 @@ const AdminAppointments = () => {
                     <td className="p-3 text-foreground">{a.slot}</td>
                     <td className="p-3"><Badge variant={a.status === "done" ? "secondary" : "default"}>{a.status}</Badge></td>
                     <td className="p-3">
-                      {a.status !== "done" && <Button size="sm" variant="outline" onClick={() => markDone(a.id)}>Mark Done</Button>}
+                      {a.status === "confirmed" && (
+                        <div className="flex gap-1">
+                          <Button size="sm" onClick={() => markCompleted(a)}>Completed</Button>
+                          <Button size="sm" variant="destructive" onClick={() => markNotCompleted(a.id)}>Not Completed</Button>
+                        </div>
+                      )}
+                      {(a.status === "completed" || a.status === "done") && <Badge variant="default">Completed</Badge>}
+                      {a.status === "no-show" && <Badge variant="destructive">No Show</Badge>}
                     </td>
                   </tr>
                 ))}

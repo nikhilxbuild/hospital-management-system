@@ -82,8 +82,28 @@ const AdminBilling = () => {
   const markPaid = async (id: string) => {
     await supabase.from("billing").update({ status: "paid" }).eq("id", id);
     if (selected?.id === id) setSelected({ ...selected, status: "paid" });
+
+    // Trigger SMS to patient after billing is completed
+    const bill = bills.find((b) => b.id === id) || selected;
+    if (bill) {
+      // Get patient phone from appointments or patients table
+      let phone = "N/A";
+      if (bill.appointment_id) {
+        const { data: apt } = await supabase.from("appointments").select("patient_id").eq("id", bill.appointment_id).maybeSingle();
+        if (apt?.patient_id) {
+          const { data: patient } = await supabase.from("patients").select("phone").eq("id", apt.patient_id).maybeSingle();
+          if (patient?.phone) phone = patient.phone;
+        }
+      }
+      await supabase.from("sms_log").insert({
+        patient_name: bill.patient_name,
+        phone,
+        message: `Your appointment with ${bill.doctor_name} is complete. Total bill: ₹${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+      });
+    }
+
     load();
-    toast({ title: "Marked as paid" });
+    toast({ title: "Marked as paid & SMS triggered to patient" });
   };
 
   const doctorFee = selected?.amount || 0;

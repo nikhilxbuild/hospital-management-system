@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 const adminLinks = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Appointments", path: "/admin/appointments", icon: CalendarDays },
-  { label: "Consultations", path: "/admin/consultations", icon: Stethoscope },
+  
   { label: "Doctor Schedules", path: "/admin/schedules", icon: Clock },
   { label: "Doctors", path: "/admin/doctors", icon: UserCog },
   { label: "Patients", path: "/admin/patients", icon: Users },
