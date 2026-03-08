@@ -43,7 +43,7 @@ const AdminSchedules = () => {
   };
 
   const save = async () => {
-    await supabase.from("doctors").update({ available_days: days, available_slots: slots }).eq("id", selectedId);
+    await supabase.from("doctors").update({ available_days: days, available_slots: slots, max_patients_per_day: maxPatients } as any).eq("id", selectedId);
     toast({ title: "Schedule updated" });
     // refresh
     const { data } = await supabase.from("doctors").select("*");
