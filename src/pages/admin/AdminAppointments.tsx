@@ -70,9 +70,27 @@ const AdminAppointments = () => {
     load();
   };
 
-  const markDone = async (id: string) => {
-    await supabase.from("appointments").update({ status: "done" }).eq("id", id);
-    toast({ title: "Marked as done" });
+  const markCompleted = async (apt: any) => {
+    // Update appointment status
+    await supabase.from("appointments").update({ status: "completed" }).eq("id", apt.id);
+
+    // Create billing entry for this appointment
+    await supabase.from("billing").insert({
+      appointment_id: apt.id,
+      patient_name: apt.patient_name,
+      doctor_name: apt.doctor_name,
+      date: apt.date,
+      amount: apt.fee || 0,
+      status: "pending",
+    });
+
+    toast({ title: "Appointment completed — moved to billing" });
+    load();
+  };
+
+  const markNotCompleted = async (id: string) => {
+    await supabase.from("appointments").update({ status: "no-show" }).eq("id", id);
+    toast({ title: "Marked as not completed (no-show)" });
     load();
   };
 
@@ -144,7 +162,14 @@ const AdminAppointments = () => {
                     <td className="p-3 text-foreground">{a.slot}</td>
                     <td className="p-3"><Badge variant={a.status === "done" ? "secondary" : "default"}>{a.status}</Badge></td>
                     <td className="p-3">
-                      {a.status !== "done" && <Button size="sm" variant="outline" onClick={() => markDone(a.id)}>Mark Done</Button>}
+                      {a.status === "confirmed" && (
+                        <div className="flex gap-1">
+                          <Button size="sm" onClick={() => markCompleted(a)}>Completed</Button>
+                          <Button size="sm" variant="destructive" onClick={() => markNotCompleted(a.id)}>Not Completed</Button>
+                        </div>
+                      )}
+                      {(a.status === "completed" || a.status === "done") && <Badge variant="default">Completed</Badge>}
+                      {a.status === "no-show" && <Badge variant="destructive">No Show</Badge>}
                     </td>
                   </tr>
                 ))}
