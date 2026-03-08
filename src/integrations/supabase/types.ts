@@ -165,6 +165,7 @@ export type Database = {
           fee: number
           id: string
           img_emoji: string | null
+          max_patients_per_day: number
           name: string
           password: string | null
           patients_count: number | null
@@ -182,6 +183,7 @@ export type Database = {
           fee?: number
           id?: string
           img_emoji?: string | null
+          max_patients_per_day?: number
           name: string
           password?: string | null
           patients_count?: number | null
@@ -199,6 +201,7 @@ export type Database = {
           fee?: number
           id?: string
           img_emoji?: string | null
+          max_patients_per_day?: number
           name?: string
           password?: string | null
           patients_count?: number | null

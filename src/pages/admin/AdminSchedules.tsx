@@ -17,6 +17,7 @@ const AdminSchedules = () => {
   const [selectedId, setSelectedId] = useState("");
   const [days, setDays] = useState<string[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
+  const [maxPatients, setMaxPatients] = useState(30);
 
   useEffect(() => {
     supabase.from("doctors").select("*").then(({ data }) => {
@@ -29,6 +30,7 @@ const AdminSchedules = () => {
     if (doc) {
       setDays(doc.available_days || []);
       setSlots(doc.available_slots || []);
+      setMaxPatients(doc.max_patients_per_day || 30);
     }
   }, [selectedId, doctors]);
 
@@ -41,7 +43,7 @@ const AdminSchedules = () => {
   };
 
   const save = async () => {
-    await supabase.from("doctors").update({ available_days: days, available_slots: slots }).eq("id", selectedId);
+    await supabase.from("doctors").update({ available_days: days, available_slots: slots, max_patients_per_day: maxPatients } as any).eq("id", selectedId);
     toast({ title: "Schedule updated" });
     // refresh
     const { data } = await supabase.from("doctors").select("*");
@@ -118,6 +120,23 @@ const AdminSchedules = () => {
                     {s}
                   </button>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-shadow">
+            <CardHeader><CardTitle className="text-lg">Max Patients Per Day</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={maxPatients}
+                  onChange={(e) => setMaxPatients(parseInt(e.target.value) || 1)}
+                  className="w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                />
+                <span className="text-sm text-muted-foreground">patients per day</span>
               </div>
             </CardContent>
           </Card>
