@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useStaffSession } from "@/hooks/useStaffSession";
 import {
-  LayoutDashboard, CalendarDays, Stethoscope, Clock, Users, Receipt,
+  LayoutDashboard, CalendarDays, Clock, Users, Receipt,
   MessageSquare, LogOut, Heart, ChevronLeft, ChevronRight, UserCog
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
