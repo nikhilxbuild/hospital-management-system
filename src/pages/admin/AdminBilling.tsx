@@ -98,7 +98,8 @@ const AdminBilling = () => {
       await supabase.from("sms_log").insert({
         patient_name: bill.patient_name,
         phone,
-        message: `Your appointment with ${bill.doctor_name} is complete. Total bill: ₹${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+        message: `Dear ${bill.patient_name}, your appointment with Dr. ${bill.doctor_name} is complete. Total Bill: Rs.${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+        status: "sent",
       });
     }
 
@@ -219,15 +220,16 @@ const AdminBilling = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="space-y-2">
+              <BillPDF bill={selected || {}} items={items} doctorFee={doctorFee} />
               {selected?.status !== "paid" && (
-                <Button variant="outline" className="flex-1" onClick={() => markPaid(selected?.id)}>
-                  Mark as Paid
+                <Button variant="outline" className="w-full" onClick={() => markPaid(selected?.id)}>
+                  Mark as Paid & Send Notification
                 </Button>
               )}
-              <div className="flex-1">
-                <BillPDF bill={selected || {}} items={items} doctorFee={doctorFee} />
-              </div>
+              {selected?.status === "paid" && (
+                <p className="text-center text-sm text-muted-foreground">✓ Paid — SMS & WhatsApp notification sent</p>
+              )}
             </div>
           </div>
         </DialogContent>

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer } from "lucide-react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -28,55 +28,49 @@ const BillPDF = ({ bill, items, doctorFee }: BillPDFProps) => {
   const totalItems = items.reduce((s, i) => s + i.amount, 0);
   const grandTotal = doctorFee + totalItems;
   const billId = bill.id ? bill.id.slice(0, 8).toUpperCase() : "N/A";
-  const today = new Date().toLocaleDateString("en-IN");
 
-  const handleDownloadPDF = async () => {
-    const element = ref.current;
-    if (!element) return;
-
+  const handlePrint = async () => {
+    if (!ref.current) return;
     setGenerating(true);
     try {
-      // Temporarily make visible for rendering
-      element.style.position = "fixed";
-      element.style.left = "0";
-      element.style.top = "0";
-      element.style.zIndex = "-1";
-      element.style.opacity = "1";
-      element.style.width = "794px"; // A4 width at 96dpi
+      ref.current.style.position = "fixed";
+      ref.current.style.left = "0";
+      ref.current.style.top = "0";
+      ref.current.style.zIndex = "-1";
+      ref.current.style.opacity = "1";
+      ref.current.style.width = "794px";
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
+      const canvas = await html2canvas(ref.current, {
+        scale: 1.5,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
       });
 
-      // Restore hidden
-      element.style.position = "absolute";
-      element.style.left = "-9999px";
-      element.style.opacity = "0";
+      ref.current.style.position = "absolute";
+      ref.current.style.left = "-9999px";
+      ref.current.style.opacity = "0";
 
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 0.6);
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const imgWidth = 190;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      let remainingHeight = imgHeight;
-      let position = 0;
+      let heightLeft = imgHeight;
+      let position = 10;
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      remainingHeight -= pdfHeight;
+      pdf.addImage(imgData, "JPEG", 10, position, imgWidth, imgHeight);
+      heightLeft -= 277;
 
-      while (remainingHeight > 0) {
-        position = remainingHeight - imgHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 10;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        remainingHeight -= pdfHeight;
+        pdf.addImage(imgData, "JPEG", 10, position, imgWidth, imgHeight);
+        heightLeft -= 277;
       }
 
-      pdf.save(`RK-Hospital-Bill-${billId}.pdf`);
+      pdf.autoPrint();
+      window.open(pdf.output("bloburl"), "_blank");
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -86,209 +80,104 @@ const BillPDF = ({ bill, items, doctorFee }: BillPDFProps) => {
 
   return (
     <>
-      {/* Hidden bill layout for PDF rendering */}
       <div ref={ref} style={{ position: "absolute", left: "-9999px", opacity: 0 }}>
         <div style={{
-          fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
-          padding: "40px",
-          color: "#1a1a1a",
+          fontFamily: "Arial, Helvetica, sans-serif",
+          padding: "32px 40px",
+          color: "#000000",
           backgroundColor: "#ffffff",
-          minHeight: "1100px",
+          fontSize: "13px",
+          lineHeight: "1.5",
         }}>
-          {/* Hospital Header */}
-          <div style={{ textAlign: "center", borderBottom: "3px double #0c4a6e", paddingBottom: "20px", marginBottom: "24px" }}>
-            <div style={{ fontSize: "14px", color: "#dc2626", fontWeight: 600, letterSpacing: "2px", marginBottom: "4px" }}>
-              ✚
-            </div>
-            <h1 style={{ fontSize: "32px", fontWeight: 800, color: "#0c4a6e", margin: 0, letterSpacing: "1px" }}>
-              RK HOSPITAL
-            </h1>
-            <p style={{ color: "#64748b", fontSize: "12px", marginTop: "6px", letterSpacing: "0.5px" }}>
-              Multi-Speciality Hospital & Diagnostic Centre
-            </p>
-            <p style={{ color: "#64748b", fontSize: "11px", marginTop: "2px" }}>
-              Mumbai, Maharashtra • Phone: +91 XXXXX XXXXX • Email: info@rkhospital.com
-            </p>
-            <div style={{
-              display: "inline-block",
-              marginTop: "12px",
-              background: "#0c4a6e",
-              color: "#ffffff",
-              padding: "4px 20px",
-              fontSize: "13px",
-              fontWeight: 700,
-              letterSpacing: "2px",
-              borderRadius: "2px",
-            }}>
-              BILL / INVOICE
-            </div>
+          {/* Header */}
+          <div style={{ textAlign: "center", borderBottom: "2px solid #000", paddingBottom: "12px", marginBottom: "16px" }}>
+            <div style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "1px" }}>RK HOSPITAL</div>
+            <div style={{ fontSize: "11px", color: "#333", marginTop: "2px" }}>Multi-Speciality Hospital & Diagnostic Centre</div>
+            <div style={{ fontSize: "10px", color: "#555", marginTop: "2px" }}>Mumbai, Maharashtra • Ph: +91 XXXXX XXXXX</div>
+            <div style={{ fontSize: "12px", fontWeight: 700, marginTop: "8px", letterSpacing: "2px" }}>BILL / INVOICE</div>
           </div>
 
-          {/* Bill Info Row */}
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-            fontSize: "12px",
-            color: "#475569",
-          }}>
-            <div>
-              <span style={{ fontWeight: 600 }}>Bill No: </span>
-              <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#0c4a6e" }}>{billId}</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 600 }}>Date: </span>
-              <span>{bill.date || today}</span>
-            </div>
+          {/* Bill Info */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "12px" }}>
+            <div><strong>Bill No:</strong> {billId}</div>
+            <div><strong>Date:</strong> {bill.date}</div>
           </div>
 
-          {/* Patient & Doctor Details */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px",
-            marginBottom: "28px",
-            border: "1px solid #e2e8f0",
-            borderRadius: "6px",
-            overflow: "hidden",
-          }}>
-            <div style={{ padding: "16px", borderRight: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "1px", marginBottom: "8px" }}>
-                Patient Details
+          {/* Patient/Doctor */}
+          <div style={{ border: "1px solid #000", marginBottom: "16px", fontSize: "12px" }}>
+            <div style={{ display: "flex" }}>
+              <div style={{ flex: 1, padding: "8px 12px", borderRight: "1px solid #000" }}>
+                <div style={{ fontSize: "10px", fontWeight: 700, marginBottom: "4px" }}>PATIENT</div>
+                <div style={{ fontWeight: 700 }}>{bill.patient_name}</div>
               </div>
-              <div style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>{bill.patient_name}</div>
-            </div>
-            <div style={{ padding: "16px" }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "1px", marginBottom: "8px" }}>
-                Attending Doctor
+              <div style={{ flex: 1, padding: "8px 12px" }}>
+                <div style={{ fontSize: "10px", fontWeight: 700, marginBottom: "4px" }}>DOCTOR</div>
+                <div style={{ fontWeight: 700 }}>{bill.doctor_name}</div>
               </div>
-              <div style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>{bill.doctor_name}</div>
             </div>
           </div>
 
-          {/* Charges Table */}
-          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "0" }}>
+          {/* Table */}
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "0", fontSize: "12px" }}>
             <thead>
               <tr>
-                <th style={{
-                  background: "#0c4a6e", color: "#ffffff", textAlign: "left",
-                  padding: "10px 14px", fontSize: "11px", fontWeight: 700,
-                  letterSpacing: "0.5px", width: "50px",
-                }}>S.No</th>
-                <th style={{
-                  background: "#0c4a6e", color: "#ffffff", textAlign: "left",
-                  padding: "10px 14px", fontSize: "11px", fontWeight: 700,
-                  letterSpacing: "0.5px",
-                }}>Description</th>
-                <th style={{
-                  background: "#0c4a6e", color: "#ffffff", textAlign: "right",
-                  padding: "10px 14px", fontSize: "11px", fontWeight: 700,
-                  letterSpacing: "0.5px", width: "140px",
-                }}>Amount (₹)</th>
+                <th style={{ border: "1px solid #000", padding: "6px 10px", textAlign: "left", fontWeight: 700, width: "40px" }}>S.No</th>
+                <th style={{ border: "1px solid #000", padding: "6px 10px", textAlign: "left", fontWeight: 700 }}>Description</th>
+                <th style={{ border: "1px solid #000", padding: "6px 10px", textAlign: "right", fontWeight: 700, width: "120px" }}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
-              <tr style={{ background: "#f8fafc" }}>
-                <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px" }}>1</td>
-                <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px" }}>Doctor Consultation Fee</td>
-                <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                  {doctorFee.toLocaleString("en-IN")}
-                </td>
+              <tr>
+                <td style={{ border: "1px solid #000", padding: "6px 10px" }}>1</td>
+                <td style={{ border: "1px solid #000", padding: "6px 10px" }}>Consultation Fee</td>
+                <td style={{ border: "1px solid #000", padding: "6px 10px", textAlign: "right" }}>{doctorFee.toLocaleString("en-IN")}.00</td>
               </tr>
               {items.map((item, i) => (
-                <tr key={i} style={{ background: i % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
-                  <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px" }}>{i + 2}</td>
-                  <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px" }}>{item.description}</td>
-                  <td style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", fontSize: "13px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {item.amount.toLocaleString("en-IN")}
-                  </td>
+                <tr key={i}>
+                  <td style={{ border: "1px solid #000", padding: "6px 10px" }}>{i + 2}</td>
+                  <td style={{ border: "1px solid #000", padding: "6px 10px" }}>{item.description}</td>
+                  <td style={{ border: "1px solid #000", padding: "6px 10px", textAlign: "right" }}>{item.amount.toLocaleString("en-IN")}.00</td>
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={2} style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "right", fontWeight: 700, fontSize: "14px" }}>
+                  GRAND TOTAL
+                </td>
+                <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "right", fontWeight: 700, fontSize: "14px" }}>
+                  ₹{grandTotal.toLocaleString("en-IN")}.00
+                </td>
+              </tr>
+            </tfoot>
           </table>
 
-          {/* Totals */}
-          <div style={{ borderTop: "2px solid #0c4a6e", marginBottom: "32px" }}>
-            <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "14px", background: "#f0f9ff",
-              borderBottom: "1px solid #e2e8f0",
-            }}>
-              <span style={{ fontSize: "13px", color: "#475569" }}>Sub Total (Tests & Services)</span>
-              <span style={{ fontSize: "13px", fontWeight: 600 }}>₹{totalItems.toLocaleString("en-IN")}</span>
-            </div>
-            <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "14px", background: "#f0f9ff",
-              borderBottom: "1px solid #e2e8f0",
-            }}>
-              <span style={{ fontSize: "13px", color: "#475569" }}>Doctor Fee</span>
-              <span style={{ fontSize: "13px", fontWeight: 600 }}>₹{doctorFee.toLocaleString("en-IN")}</span>
-            </div>
-            <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "16px 14px", background: "#0c4a6e",
-            }}>
-              <span style={{ fontSize: "16px", fontWeight: 800, color: "#ffffff", letterSpacing: "0.5px" }}>GRAND TOTAL</span>
-              <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff" }}>₹{grandTotal.toLocaleString("en-IN")}</span>
-            </div>
+          {/* Status */}
+          <div style={{ marginTop: "16px", fontSize: "12px" }}>
+            <strong>Payment Status: </strong>
+            <span>{bill.status === "paid" ? "PAID" : "PENDING"}</span>
           </div>
 
-          {/* Payment Status */}
-          <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            marginBottom: "40px", padding: "12px 16px",
-            border: `2px solid ${bill.status === "paid" ? "#16a34a" : "#f59e0b"}`,
-            borderRadius: "6px",
-            background: bill.status === "paid" ? "#f0fdf4" : "#fffbeb",
-          }}>
-            <span style={{ fontSize: "12px", fontWeight: 600, color: bill.status === "paid" ? "#16a34a" : "#d97706" }}>
-              Payment Status
-            </span>
-            <span style={{
-              fontSize: "14px", fontWeight: 800,
-              color: bill.status === "paid" ? "#16a34a" : "#d97706",
-              textTransform: "uppercase" as const,
-              letterSpacing: "1px",
-            }}>
-              {bill.status === "paid" ? "✓ PAID" : "⏳ PENDING"}
-            </span>
-          </div>
-
-          {/* Signature Area */}
-          <div style={{
-            display: "flex", justifyContent: "space-between", marginBottom: "40px",
-            paddingTop: "20px",
-          }}>
+          {/* Signatures */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "60px", fontSize: "11px" }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ borderTop: "1px solid #94a3b8", width: "180px", paddingTop: "8px" }}>
-                <span style={{ fontSize: "11px", color: "#64748b" }}>Patient / Attendant Signature</span>
-              </div>
+              <div style={{ borderTop: "1px solid #000", width: "160px", paddingTop: "4px" }}>Patient / Attendant</div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ borderTop: "1px solid #94a3b8", width: "180px", paddingTop: "8px" }}>
-                <span style={{ fontSize: "11px", color: "#64748b" }}>Authorized Signatory</span>
-              </div>
+              <div style={{ borderTop: "1px solid #000", width: "160px", paddingTop: "4px" }}>Authorized Signatory</div>
             </div>
           </div>
 
           {/* Footer */}
-          <div style={{
-            textAlign: "center", borderTop: "1px solid #e2e8f0",
-            paddingTop: "16px",
-          }}>
-            <p style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "4px" }}>
-              Thank you for choosing RK Hospital. We wish you a speedy recovery!
-            </p>
-            <p style={{ fontSize: "10px", color: "#cbd5e1" }}>
-              This is a computer-generated invoice and does not require a physical signature.
-            </p>
+          <div style={{ textAlign: "center", marginTop: "32px", fontSize: "10px", color: "#666", borderTop: "1px solid #999", paddingTop: "8px" }}>
+            <div>Thank you for visiting RK Hospital. Get well soon!</div>
+            <div>Computer generated bill — does not require signature.</div>
           </div>
         </div>
       </div>
 
-      <Button onClick={handleDownloadPDF} disabled={generating} className="gap-2 w-full">
-        <Download className="h-4 w-4" /> {generating ? "Generating..." : "Download Bill PDF"}
+      <Button onClick={handlePrint} disabled={generating} className="gap-2 w-full">
+        <Printer className="h-4 w-4" /> {generating ? "Generating..." : "Print Bill"}
       </Button>
     </>
   );
