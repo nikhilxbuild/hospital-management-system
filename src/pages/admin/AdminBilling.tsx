@@ -98,7 +98,8 @@ const AdminBilling = () => {
       await supabase.from("sms_log").insert({
         patient_name: bill.patient_name,
         phone,
-        message: `Your appointment with ${bill.doctor_name} is complete. Total bill: ₹${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+        message: `Dear ${bill.patient_name}, your appointment with Dr. ${bill.doctor_name} is complete. Total Bill: Rs.${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+        status: "sent",
       });
     }
 
