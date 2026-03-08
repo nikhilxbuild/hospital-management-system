@@ -44,7 +44,7 @@ const AdminLogin = () => {
       .select("*")
       .eq("username", username)
       .eq("password", password)
-      .eq("role", role)
+      .eq("role", role as "admin" | "doctor" | "receptionist")
       .maybeSingle();
 
     if (error || !data) {
