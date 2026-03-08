@@ -219,15 +219,16 @@ const AdminBilling = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="space-y-2">
+              <BillPDF bill={selected || {}} items={items} doctorFee={doctorFee} />
               {selected?.status !== "paid" && (
-                <Button variant="outline" className="flex-1" onClick={() => markPaid(selected?.id)}>
-                  Mark as Paid
+                <Button variant="outline" className="w-full" onClick={() => markPaid(selected?.id)}>
+                  Mark as Paid & Send Notification
                 </Button>
               )}
-              <div className="flex-1">
-                <BillPDF bill={selected || {}} items={items} doctorFee={doctorFee} />
-              </div>
+              {selected?.status === "paid" && (
+                <p className="text-center text-sm text-muted-foreground">✓ Paid — SMS & WhatsApp notification sent</p>
+              )}
             </div>
           </div>
         </DialogContent>
