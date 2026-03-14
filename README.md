@@ -110,6 +110,29 @@ This structure ensures that every consultation is linked to patient records, pre
 
 ---
 
+## 👨‍💻 Author
+
+**Nikhil Sinha**  
+Web Developer & Product Builder  
+
+Portfolio: https://nikhilsinha.in
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+Copyright (c) 2026 Nikhil Sinha
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files to deal in the Software
+without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the
+Software.
+
+---
+
 # 💻 Installation
 
 Clone the repository:
@@ -120,12 +143,3 @@ cd <PROJECT_NAME>
 npm install
 npm run dev
 
-# 👨‍💻 Author
-
-Nikhil Sinha
-Web Developer & Product Builder
-Interested in building scalable web applications and AI-powered tools.
-
-# 📄 License
-
-This project is licensed under the MIT License.
