@@ -1,73 +1,131 @@
-# Welcome to your Lovable project
+# 🏥 Hospital Management System
 
-## Project info
+A modern **Hospital Management System (HMS)** designed to help clinics and hospitals manage patients, doctors, appointments, medical records, prescriptions, and billing efficiently.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+The system provides a **patient portal** where patients can book appointments, view medical history, prescriptions, and bills, and an **admin dashboard** where hospital staff manage doctors, appointments, and patient records.
 
-## How can I edit this code?
+This project demonstrates the design of a real-world healthcare management platform built with modern web technologies.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+# 🚀 Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 👤 Patient Portal
+- Secure patient registration and login
+- Book appointments with available doctors
+- View appointment history
+- Access medical history and diagnosis records
+- View prescribed medicines from previous consultations
+- Track consultation bills and payment history
 
-Changes made via Lovable will be committed automatically to this repo.
+## 👨‍⚕️ Doctor Management
+- Add and manage doctors
+- Store specialization and experience details
+- Set daily appointment limits
+- Manage doctor schedules
 
-**Use your preferred IDE**
+## 📅 Appointment System
+- Online appointment booking
+- Automatic token number generation
+- Prevent overbooking with daily limits
+- Appointment status tracking (Booked / Completed / Cancelled)
+- Manual appointment creation for walk-in patients
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🩺 Visit Records
+- Record diagnosis notes for each consultation
+- Store medical visit history
+- Track follow-up visit dates
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 💊 Prescription Management
+- Add prescriptions after consultation
+- Store medicines, dosage, and instructions
+- Patients can view prescription history
 
-Follow these steps:
+## 💳 Billing System
+- Generate consultation bills
+- Store billing records for each visit
+- Patients can view billing history
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+## 🧑‍💼 Admin Dashboard
+- Manage doctors, patients, and appointments
+- View patient records
+- Track hospital activities from a centralized dashboard
+
+## 🔔 Notifications
+- Appointment confirmation messages
+- Token number assignment
+- Consultation completion updates
+
+---
+
+# ⭐ Key Capabilities
+
+- Patient medical history tracking
+- Digital prescription management
+- Appointment scheduling automation
+- Doctor schedule management
+- Billing and consultation record tracking
+- Centralized hospital administration dashboard
+
+---
+
+# 🧱 System Architecture
+
+The frontend communicates with Supabase APIs for authentication and data operations while PostgreSQL stores all hospital records.
+
+---
+
+# 🗄 Database Structure
+
+Core tables used in the system:
+
+- patients
+- doctors
+- appointments
+- visits
+- prescriptions
+- billing
+- notifications
+- admin_users
+
+---
+
+# 🔗 Relationship Overview
+
+This structure ensures that every consultation is linked to patient records, prescriptions, and billing information.
+
+---
+
+# ⚙️ Tech Stack
+
+| Technology | Purpose |
+|-----------|--------|
+| React | Frontend framework |
+| Vite | Development environment |
+| TypeScript | Type-safe JavaScript |
+| Tailwind CSS | UI styling |
+| shadcn-ui | UI components |
+| Supabase | Backend services and APIs |
+| PostgreSQL | Database |
+
+---
+
+# 💻 Installation
+
+Clone the repository:
+
+```bash
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+cd <PROJECT_NAME>
+npm install
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+# 👨‍💻 Author
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Nikhil Sinha
+Web Developer & Product Builder
+Interested in building scalable web applications and AI-powered tools.
 
-**Use GitHub Codespaces**
+# 📄 License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the MIT License.
