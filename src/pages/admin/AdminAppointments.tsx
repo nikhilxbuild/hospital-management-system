@@ -49,7 +49,7 @@ const AdminAppointments = () => {
       return;
     }
     const doc = doctors.find((d) => d.id === form.doctor_id);
-    const token = await generateToken(form.doctor_id, doc?.name || "X");
+    const token = await generateToken(form.doctor_id, doc?.name || "X", form.date);
 
     // Upsert patient
     const { data: existingPatient } = await supabase.from("patients").select("id").eq("phone", form.phone).maybeSingle();
