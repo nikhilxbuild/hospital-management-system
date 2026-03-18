@@ -50,7 +50,7 @@ const BookAppointment = () => {
       return;
     }
     setLoading(true);
-    const token = await generateToken(selectedDoctor, doctor.name);
+    const token = await generateToken(selectedDoctor, doctor.name, format(date!, "yyyy-MM-dd"));
 
     // Check if patient exists or create
     let patientId: string | null = null;
