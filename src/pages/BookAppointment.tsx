@@ -12,6 +12,7 @@ import { CalendarIcon, CheckCircle } from "lucide-react";
 import { format, getDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { generateToken } from "@/lib/tokenGenerator";
 
 const dayNameMap: Record<string, number> = {
   Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
@@ -49,7 +50,7 @@ const BookAppointment = () => {
       return;
     }
     setLoading(true);
-    const token = `T-${Math.floor(100 + Math.random() * 900)}`;
+    const token = await generateToken(selectedDoctor, doctor.name);
 
     // Check if patient exists or create
     let patientId: string | null = null;

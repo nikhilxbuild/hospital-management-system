@@ -57,7 +57,6 @@ const AdminBilling = () => {
       setItems([...items, data]);
       setNewDesc("");
       setNewAmount("");
-      await updateBillTotal([...items, data]);
     }
     setSaving(false);
   };
@@ -67,26 +66,28 @@ const AdminBilling = () => {
     await supabase.from("billing_items").delete().eq("id", item.id);
     const updated = items.filter((i) => i.id !== item.id);
     setItems(updated);
-    await updateBillTotal(updated);
   };
 
-  const updateBillTotal = async (currentItems: BillItem[]) => {
-    if (!selected) return;
-    const doctorFee = selected.amount || 0;
-    const itemsTotal = currentItems.reduce((s, i) => s + i.amount, 0);
-    const total = doctorFee + itemsTotal;
-    // We store base doctor fee in amount, but display total. For now keep amount as doctor fee.
-    // The grand total is computed on the fly.
+  const sendSMS = async (phone: string, message: string) => {
+    try {
+      await supabase.functions.invoke("send-sms", {
+        body: { phone, message },
+      });
+    } catch (err) {
+      console.error("SMS send failed:", err);
+    }
   };
 
   const markPaid = async (id: string) => {
     await supabase.from("billing").update({ status: "paid" }).eq("id", id);
     if (selected?.id === id) setSelected({ ...selected, status: "paid" });
 
-    // Trigger SMS to patient after billing is completed
     const bill = bills.find((b) => b.id === id) || selected;
+    const currentDoctorFee = bill?.amount || 0;
+    const currentItemsTotal = items.reduce((s, i) => s + i.amount, 0);
+    const total = currentDoctorFee + currentItemsTotal;
+
     if (bill) {
-      // Get patient phone from appointments or patients table
       let phone = "N/A";
       if (bill.appointment_id) {
         const { data: apt } = await supabase.from("appointments").select("patient_id").eq("id", bill.appointment_id).maybeSingle();
@@ -95,16 +96,24 @@ const AdminBilling = () => {
           if (patient?.phone) phone = patient.phone;
         }
       }
+
+      const smsMsg = `Dear ${bill.patient_name}, your appointment with Dr. ${bill.doctor_name} is complete. Total Bill: Rs.${total.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`;
+
       await supabase.from("sms_log").insert({
         patient_name: bill.patient_name,
         phone,
-        message: `Dear ${bill.patient_name}, your appointment with Dr. ${bill.doctor_name} is complete. Total Bill: Rs.${grandTotal.toLocaleString("en-IN")}. Status: Paid. Thank you for visiting RK Hospital!`,
+        message: smsMsg,
         status: "sent",
       });
+
+      // Send real SMS via Twilio
+      if (phone && phone !== "N/A") {
+        await sendSMS(phone, smsMsg);
+      }
     }
 
     load();
-    toast({ title: "Marked as paid & SMS triggered to patient" });
+    toast({ title: "Marked as paid & SMS sent to patient" });
   };
 
   const doctorFee = selected?.amount || 0;
@@ -150,30 +159,24 @@ const AdminBilling = () => {
         </CardContent>
       </Card>
 
-      {/* Bill Detail Dialog */}
       <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Bill — {selected?.patient_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Info */}
             <div className="rounded-lg bg-secondary p-3 text-sm space-y-1">
               <p className="text-foreground"><strong>Doctor:</strong> {selected?.doctor_name}</p>
               <p className="text-muted-foreground"><strong>Date:</strong> {selected?.date} &nbsp;|&nbsp; <strong>Bill ID:</strong> {selected?.id?.slice(0, 8).toUpperCase()}</p>
             </div>
 
-            {/* Line items */}
             <div>
               <Label className="text-base font-semibold">Charges</Label>
               <div className="mt-2 space-y-2">
-                {/* Doctor fee (non-removable) */}
                 <div className="flex items-center justify-between rounded-md border p-3 bg-muted/30">
                   <span className="text-sm text-foreground">Doctor Consultation Fee</span>
                   <span className="text-sm font-semibold text-foreground">₹{doctorFee}</span>
                 </div>
-
-                {/* Added items */}
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between rounded-md border p-3">
                     <span className="text-sm text-foreground">{item.description}</span>
@@ -188,47 +191,33 @@ const AdminBilling = () => {
               </div>
             </div>
 
-            {/* Add new charge */}
-            <div className="rounded-lg border border-dashed p-3 space-y-2">
-              <Label className="text-xs text-muted-foreground">Add Test / Service Charge</Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g. Blood Test, X-Ray"
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  className="flex-1"
-                />
-                <Input
-                  type="number"
-                  placeholder="₹"
-                  value={newAmount}
-                  onChange={(e) => setNewAmount(e.target.value)}
-                  className="w-24"
-                />
-                <Button size="sm" onClick={addItem} disabled={saving || !newDesc || !newAmount}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+            {selected?.status !== "paid" && (
+              <div className="rounded-lg border border-dashed p-3 space-y-2">
+                <Label className="text-xs text-muted-foreground">Add Test / Service Charge</Label>
+                <div className="flex gap-2">
+                  <Input placeholder="e.g. Blood Test, X-Ray" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} className="flex-1" />
+                  <Input type="number" placeholder="₹" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-24" />
+                  <Button size="sm" onClick={addItem} disabled={saving || !newDesc || !newAmount}><Plus className="h-4 w-4" /></Button>
+                </div>
               </div>
-            </div>
+            )}
 
             <Separator />
 
-            {/* Total */}
             <div className="flex items-center justify-between rounded-lg bg-primary/10 p-4">
               <span className="text-lg font-bold text-foreground">Grand Total</span>
               <span className="text-xl font-bold text-primary">₹{grandTotal.toLocaleString("en-IN")}</span>
             </div>
 
-            {/* Actions */}
             <div className="space-y-2">
               <BillPDF bill={selected || {}} items={items} doctorFee={doctorFee} />
               {selected?.status !== "paid" && (
                 <Button variant="outline" className="w-full" onClick={() => markPaid(selected?.id)}>
-                  Mark as Paid & Send Notification
+                  Mark as Paid & Send SMS
                 </Button>
               )}
               {selected?.status === "paid" && (
-                <p className="text-center text-sm text-muted-foreground">✓ Paid — SMS & WhatsApp notification sent</p>
+                <p className="text-center text-sm text-muted-foreground">✓ Paid — SMS notification sent</p>
               )}
             </div>
           </div>
