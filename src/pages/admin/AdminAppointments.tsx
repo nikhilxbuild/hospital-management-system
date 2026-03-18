@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { generateToken } from "@/lib/tokenGenerator";
 
 const AdminAppointments = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -30,13 +31,25 @@ const AdminAppointments = () => {
 
   const selectedDoc = doctors.find((d) => d.id === form.doctor_id);
 
+  const sendSMS = async (phone: string, message: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("send-sms", {
+        body: { phone, message },
+      });
+      if (error) console.error("SMS error:", error);
+      return data;
+    } catch (err) {
+      console.error("SMS send failed:", err);
+    }
+  };
+
   const handleAdd = async () => {
     if (!form.patient_name || !form.doctor_id || !form.slot || !form.date) {
       toast({ title: "Fill all fields", variant: "destructive" });
       return;
     }
-    const token = `T-${Math.floor(100 + Math.random() * 900)}`;
     const doc = doctors.find((d) => d.id === form.doctor_id);
+    const token = await generateToken(form.doctor_id, doc?.name || "X");
 
     // Upsert patient
     const { data: existingPatient } = await supabase.from("patients").select("id").eq("phone", form.phone).maybeSingle();
@@ -58,11 +71,19 @@ const AdminAppointments = () => {
       fee: doc?.fee || 0,
     });
 
+    const smsMsg = `Appointment booked. Token: ${token}, Doctor: ${doc?.name}, Date: ${form.date}, Slot: ${form.slot}. - RK Hospital`;
+
+    // Log SMS
     await supabase.from("sms_log").insert({
       patient_name: form.patient_name,
       phone: form.phone || "N/A",
-      message: `Appointment booked. Token: ${token}, Doctor: ${doc?.name}, Date: ${form.date}, Slot: ${form.slot}. - RK Hospital`,
+      message: smsMsg,
     });
+
+    // Send real SMS via Twilio
+    if (form.phone && form.phone !== "N/A") {
+      await sendSMS(form.phone, smsMsg);
+    }
 
     toast({ title: `Appointment added — Token: ${token}` });
     setOpen(false);
@@ -71,10 +92,7 @@ const AdminAppointments = () => {
   };
 
   const markCompleted = async (apt: any) => {
-    // Update appointment status
     await supabase.from("appointments").update({ status: "completed" }).eq("id", apt.id);
-
-    // Create billing entry for this appointment
     await supabase.from("billing").insert({
       appointment_id: apt.id,
       patient_name: apt.patient_name,
@@ -83,7 +101,6 @@ const AdminAppointments = () => {
       amount: apt.fee || 0,
       status: "pending",
     });
-
     toast({ title: "Appointment completed — moved to billing" });
     load();
   };

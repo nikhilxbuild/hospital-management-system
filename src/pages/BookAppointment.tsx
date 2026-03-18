@@ -49,7 +49,7 @@ const BookAppointment = () => {
       return;
     }
     setLoading(true);
-    const token = `T-${Math.floor(100 + Math.random() * 900)}`;
+    const token = await generateToken(selectedDoctor, doctor.name);
 
     // Check if patient exists or create
     let patientId: string | null = null;
